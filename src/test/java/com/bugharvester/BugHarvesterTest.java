@@ -1,29 +1,75 @@
 package com.bugharvester;
 
+import com.bugharvester.BugHarvester.BugFixingCommit;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.kohsuke.github.*;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.when;
 
-import java.lang.reflect.Method;
-
+@ExtendWith(MockitoExtension.class)
 public class BugHarvesterTest {
 
+    @Mock
+    private GitHub github;
+
+    @Mock
+    private GHRepository repository;
+
+    @Mock
+    private GHIssue issue;
+
+    @Mock
+    private GHIssueEvent event;
+
+    @Mock
+    private GHCommit commit;
+
+    @Mock
+    private GHCommit.ShortInfo shortInfo;
+
+    @Mock
+    private GHLabel label;
+
+    @Mock
+    private PagedIterable<GHIssueEvent> pagedIterable;
+
+    @Mock
+    private PagedIterator<GHIssueEvent> pagedIterator;
+
     @Test
-    public void testExtractIssueId() throws Exception {
-        Method extractIssueIdMethod = BugHarvester.class.getDeclaredMethod("extractIssueId", String.class);
-        extractIssueIdMethod.setAccessible(true);
+    public void testHarvestBugFixingCommits() throws IOException {
+        String repoUrl = "https://github.com/user/repo";
 
-        String messageWithIssueId = "Fix bug #123";
-        String issueId = (String) extractIssueIdMethod.invoke(null, messageWithIssueId);
-        assertEquals("123", issueId);
+        when(github.getRepository("user/repo")).thenReturn(repository);
+        when(repository.getIssues(GHIssueState.CLOSED)).thenReturn(Collections.singletonList(issue));
+        when(issue.getLabels()).thenReturn(Collections.singletonList(label));
+        when(label.getName()).thenReturn("bug");
+        when(issue.listEvents()).thenReturn(pagedIterable);
+        when(pagedIterable.iterator()).thenReturn(pagedIterator);
+        when(pagedIterator.hasNext()).thenReturn(true, false);
+        when(pagedIterator.next()).thenReturn(event);
+        when(event.getEvent()).thenReturn("closed");
+        when(event.getCommitId()).thenReturn("commit_id");
+        when(repository.getCommit("commit_id")).thenReturn(commit);
+        when(commit.getSHA1()).thenReturn("commit_hash");
+        when(commit.getCommitShortInfo()).thenReturn(shortInfo);
+        when(shortInfo.getMessage()).thenReturn("Fixes #123");
+        when(issue.getNumber()).thenReturn(123);
 
-        String messageWithoutIssueId = "Fix a bug";
-        issueId = (String) extractIssueIdMethod.invoke(null, messageWithoutIssueId);
-        assertNull(issueId);
+        List<BugFixingCommit> bfcs = BugHarvester.harvestBugFixingCommits(github, repoUrl);
 
-        String messageWithMultipleIssueIds = "Fix bug #123 and #456";
-        issueId = (String) extractIssueIdMethod.invoke(null, messageWithMultipleIssueIds);
-        assertEquals("123", issueId);
+        assertEquals(1, bfcs.size());
+        BugFixingCommit bfc = bfcs.get(0);
+        assertEquals("commit_hash", bfc.commitHash);
+        assertEquals("Fixes #123", bfc.commitMessage);
+        assertEquals("123", bfc.issueId);
     }
 }
