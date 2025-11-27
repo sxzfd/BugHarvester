@@ -83,6 +83,10 @@ public class ProjectAnalyzer {
         return exitCode == 0;
     }
 
+    public File getRepoDir() {
+        return repoDir;
+    }
+
     public RevCommit getParent(String commitHash) throws IOException {
         try (RevWalk revWalk = new RevWalk(git.getRepository())) {
             RevCommit commit = revWalk.parseCommit(ObjectId.fromString(commitHash));

@@ -42,11 +42,25 @@ public class BFCVerifier {
         }
 
         analyzer.checkout(parentCommit.getName());
-        boolean parentTestsPass = analyzer.buildAndTest();
+
+        for (String testFile : testFiles) {
+            String testFileContent = analyzer.getFileContentAtCommit(bfc.commitHash, testFile);
+            if (testFileContent != null) {
+                Path filePath = Paths.get(analyzer.getRepoDir().getPath(), testFile);
+                Files.createDirectories(filePath.getParent());
+                try (FileWriter writer = new FileWriter(filePath.toFile())) {
+                    writer.write(testFileContent);
+                }
+            }
+        }
+
+        boolean parentTestsPassWithMigratedTests = analyzer.buildAndTest();
+
+        analyzer.checkout(parentCommit.getName());
 
         analyzer.checkout(bfc.commitHash);
         boolean bfcTestsPass = analyzer.buildAndTest();
 
-        return !parentTestsPass && bfcTestsPass;
+        return !parentTestsPassWithMigratedTests && bfcTestsPass;
     }
 }
