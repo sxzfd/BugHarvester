@@ -1,0 +1,722 @@
+[
+  {
+    "commitHash": "cc90f726cd721ad2c19cbd27997482a5f9b8a7ae",
+    "commitMessage": "Support parsing custom void tags\n\nFixes #2425",
+    "issueId": "2425"
+  },
+  {
+    "commitHash": "ff69df4c9374d2f450fb73ddeb1b1447735e47b2",
+    "commitMessage": "Reset evaluators immediately after use, not only on reuse\n\nThat frees up the cache directly in the typical `el.select(\"parent child\")` flow.\n\nThe streaming use of evaluators still only reset on reuse, because the control flow of the stream returns to the caller before complete execution. But we also now hold the cache as a WeakHashMap, so it can be GCed when the DOM goes unreachable.\n\nAlso changed to the reset to call `remove` so that the ThreadLocalMap entry is removed (vs just clearing the held map).\n\nFixes #2411",
+    "issueId": "2411"
+  },
+  {
+    "commitHash": "de2bfde155891ecbba3ad6065f2145bca6b29e4a",
+    "commitMessage": "Confirm current el is frameset before attempting to pop\n\nFixes #2397",
+    "issueId": "2397"
+  },
+  {
+    "commitHash": "c42f4c37b694c43fb1894c9506c561abf0d19968",
+    "commitMessage": "Error vs throw if the insert after el was no longer on the stack\n\nFixes #2393",
+    "issueId": "2393"
+  },
+  {
+    "commitHash": "71b7ce59d7e505268dc39bf006fa0c2faf64b4f7",
+    "commitMessage": "Invalidate child element cache on node replacement\n\nFixes #2391\n\nReviewed other paths and AFAICT, as they are add / removing from the list, can rely on the base modcount changing.",
+    "issueId": "2391"
+  },
+  {
+    "commitHash": "582aaa0d725a161e3f993acfa8ab2d73a6563303",
+    "commitMessage": "Don\u0027t trim attribute value matchers\n\nFixes #2380; aligns to spec.",
+    "issueId": "2380"
+  },
+  {
+    "commitHash": "6a19564ba328d5dd866d82cac25ad95b7082a7c5",
+    "commitMessage": "Don\u0027t enter Text from Foreign\n\nBecause if nested, original insertion mode may be set to Text, and then we can never get out.\n\nDouble checked spec, not required. And checked that entering ScriptData tokenization mode still gets the foreign script into data.\n\nFixes #2374",
+    "issueId": "2374"
+  },
+  {
+    "commitHash": "fa61c69511d2e5b30106dd0515bdee67e6bbbb03",
+    "commitMessage": "Don\u0027t create userData() when trying to clear a userData field\n\nFixes #2356",
+    "issueId": "2356"
+  },
+  {
+    "commitHash": "967306fbd12dca9d465f3f1c47fbcad6cfe7531a",
+    "commitMessage": "Don\u0027t revisit ancestors if last node removed\n\nFixes #2355",
+    "issueId": "2355"
+  },
+  {
+    "commitHash": "3b97e9616b96c80b8211a2fb7358c350b491c76e",
+    "commitMessage": "If a surrogate is on the buffer boundary, break buffering\n\nFixes #2353",
+    "issueId": "2353"
+  },
+  {
+    "commitHash": "1d597768bfb1c4ece19b168a1f6083cb4ff55b32",
+    "commitMessage": "Add a minimal set of status messages for HttpClient\n\nJust to provide compatibility for users of `res.statusMessage`. This won\u0027t be the message from the server (if there was one).\n\nFixes #2346",
+    "issueId": "2346"
+  },
+  {
+    "commitHash": "7693192fb34380328936a73f8c8cc346893a457a",
+    "commitMessage": "Tokenize closing Data as tagName, not LetterSequence\n\nFixes #2332",
+    "issueId": "2332"
+  },
+  {
+    "commitHash": "ec7fcd3b76af03f32f6b0a221acc66d7efb6d9be",
+    "commitMessage": "Don\u0027t trim whitespace if previous element was inline\n\nFixes #2325",
+    "issueId": "2325"
+  },
+  {
+    "commitHash": "41dc7cdc29becc144ec4ce7b9da8d2e1b1b163b9",
+    "commitMessage": "Don\u0027t update options in isFormSubmittable()\n\nFixes #2323",
+    "issueId": "2323"
+  },
+  {
+    "commitHash": "c32924fbde89766b2b59f45e5820d373559f92d1",
+    "commitMessage": "Don\u0027t emit an error on the `?` ending an XML declaration\n\nFixes #2298",
+    "issueId": "2298"
+  },
+  {
+    "commitHash": "df347747385e6d30d2899262125cd20a08bfa9e6",
+    "commitMessage": "Don\u0027t fire fake onNodeClosed for `/body` or `/html`\n\nThese were fired to get those closing node source positions tracked, but the node isn\u0027t actually popped at that stage. So, it was causing the StreamParser to emit twice.\n\nJust call trackNodePosition directly.\n\nFixes #2295",
+    "issueId": "2295"
+  },
+  {
+    "commitHash": "d55469aa637a3fea7d2a8a7a6291f6ca1774df4f",
+    "commitMessage": "Clone the Parser when cloning a Document\n\nThis ensures that concurrent calls to `doc.append(html)`, which uses the document\u0027s parser, are supported.\n\nFixes #2281",
+    "issueId": "2281"
+  },
+  {
+    "commitHash": "76b391e367645d367a6cdd4b48b107bcc2ee9ae1",
+    "commitMessage": "Cascade cache resets in StructuralEvaluator\n\nFixes #2277",
+    "issueId": "2277"
+  },
+  {
+    "commitHash": "5d31cac5888b872daa54e09238feeaa8e4e435e7",
+    "commitMessage": "Don\u0027t try to get child nodes if there aren\u0027t any yet\n\nFixes #2266",
+    "issueId": "2266"
+  },
+  {
+    "commitHash": "72fb5963d96c7a6f2663513aa993049239bada23",
+    "commitMessage": "`template` is a special tag\n\nAlso updated isSpecial to current spec\n\nFixes #2258",
+    "issueId": "2258"
+  },
+  {
+    "commitHash": "9591169019cbf964f748eb657d1f0ab8cd0b0f09",
+    "commitMessage": "Skip empty cookie names\n\nFixes #2242",
+    "issueId": "2242"
+  },
+  {
+    "commitHash": "0a4b830ccb9df906c11d154c774e14fb2eb5deff",
+    "commitMessage": "Fix XML attribute validation\n\nWhen converting from the `[a-zA-Z_:][-a-zA-Z0-9_:.]*` regex, missed `-`, `.`, and digits.\n\nAlso clarified HTML attribute scan.\n\nFixes #2235",
+    "issueId": "2235"
+  },
+  {
+    "commitHash": "5ee376bc5bbe6a4f66eb24e2180552b547b8a4bf",
+    "commitMessage": "Entity decoding supports prefix matches\n\nWhen parsing named HTML entities, base entities should resolve if they are a prefix of the input token (and not in an  attribute). Finds the longest prefix.\n\nValidated matches browser behavior and extended entities *don\u0027t* match (like `\u0026clubsuite;`)\n\nFixes #2207",
+    "issueId": "2207"
+  },
+  {
+    "commitHash": "91b5a56c63a9f8dca761b4cab959977fcd3308fd",
+    "commitMessage": "Copy attribute source range when merging attributes\n\nAlso simplified setting source range.\n\nFixes #2204",
+    "issueId": "2204"
+  },
+  {
+    "commitHash": "dc3b6c59d2d4dc1b72424785e9b8455b1df15664",
+    "commitMessage": "Simplify character start position tracking\n\nFixes #2175\n\nMoves the char start update to the token completion emit event, vs reader state changes. Multiple state changes may happen for the same token as the tokeniser unwinds itself from an invalid state, which would inadvertently clear the char start position.",
+    "issueId": "2175"
+  },
+  {
+    "commitHash": "6c0c2d4514278a82eb0868c5d978612a79c6d058",
+    "commitMessage": "Improved URL component escaping\n\nChecks for specific unsafe characters\n\nFixes #2142",
+    "issueId": "2142"
+  },
+  {
+    "commitHash": "0daab3dd601ced7fb07d4b000bf25b1315da0b40",
+    "commitMessage": "Use a SoftPool of ElementIterators vs a single ThreadLocal\n\nFor nested `:has()` evaluators, using a single ThreadLocal of the Element Iterator was effectively non-reentrant, and reusing it may trash the outer iteration.\n\nFixes #2131",
+    "issueId": "2131"
+  },
+  {
+    "commitHash": "be1301f86a80221ed5477980999d599a3710e1eb",
+    "commitMessage": "Initialize startPos to 0 vs -1\n\nSo that nodes that are added without first going through transition() have the correct start pos.\n\nFixes #2106",
+    "issueId": "2106"
+  },
+  {
+    "commitHash": "374ded2bc3d57108fffbead844371ecc5fab63ee",
+    "commitMessage": "Use a threadlocal to hold the NodeIterator\n\nEnsures that an Evaluator query can be multi-threaded\n\nFixes #2088",
+    "issueId": "2088"
+  },
+  {
+    "commitHash": "8a4bdaef7aeaaa62d4016b890cdca87b1a701b7f",
+    "commitMessage": "Output polyglot commented CData sections in XML mode\n\nAnd only if the data does not already contain a (pseudo) CData section.\n\nFixes #2078",
+    "issueId": "2078"
+  },
+  {
+    "commitHash": "7e9160110f3cac233e748f4f31c2ec22f0286f6b",
+    "commitMessage": "Sub-query should terminate on a combinator after any clause\n\nMissed setting seenCombinator for attributes / sub-clauses.\n\nFixes #2073\nRegression in: d126488db626790a69ce99bb96bf3cfe9c591534\n\nAlso added EvaluatorDebug which creates a XML outline and a sexpr for the query, to aid visualizing the query. Might make it public and add it to try.jsoup.org.",
+    "issueId": "2073"
+  },
+  {
+    "commitHash": "daef8bb412db6c94b9895837ae6e28c5770c65ad",
+    "commitMessage": "Initialise current token to the virtual start token\n\nEnsures that in body fragment parsing, which adds the context element to the stack before there is a real token, has a current token during the track position for that first stack insert.\n\nFixes #2068",
+    "issueId": "2068"
+  },
+  {
+    "commitHash": "fc4b175e02df2ceabdec9371d1874a014a35472d",
+    "commitMessage": "Normalize and dedupe attribute source ranges\n\nFixes #2067",
+    "issueId": "2067"
+  },
+  {
+    "commitHash": "94af4ec25ded5c74b4a5748d59378fb955b5ecc1",
+    "commitMessage": "In Cleaner, use the normalized tag name in the tail hit\n\nAnd ensure that tags added to the safelist are normalized.\n\nIn copy safe nodes, head was using normalized but the tail was using nodename. So if the safelist and the input had different cases, the tail hit would not ascend the stack on an otherwise safe tag, leading to mis-nested children.\n\nAlso fixed an issue that the cleaned element did not preserve the self-closing style of the input document.\n\nFixes #2049",
+    "issueId": "2049"
+  },
+  {
+    "commitHash": "2a4a9cf83dea46aff9fc97fc6da808948f5086e0",
+    "commitMessage": "ImmediateParent evaluator should not match the context root\n\nFixes #2018\n\nWas a regression when ImmediateParent was reimplemented into ImmediateParentRun",
+    "issueId": "2018"
+  },
+  {
+    "commitHash": "eff15210b0507f3eb20ff71a201061e841b40c77",
+    "commitMessage": "Clear child nodes\u0027 parent on parent.empty()\n\nFixes #2013",
+    "issueId": "2013"
+  },
+  {
+    "commitHash": "9170b1d17b3b0c953c0a07b3d62a7884f3a7e019",
+    "commitMessage": "Fix StackOverflowErrors on extremely deeply nested Elements\n\nRemoved recursion on parent() in cssSelector, which could overflow.\n\nRefactored ImmediateParent into a run of parents, so that a very deep chain of And(ImmediateParent, eval) evaluators would not be constructed, which could stack overflow when evaluated.\n\nFixes #2001",
+    "issueId": "2001"
+  },
+  {
+    "commitHash": "04b3a82861ae0d2a6317cf4466e3d7e021d1beaa",
+    "commitMessage": "Don\u0027t clear interrupt with Thread.interrupted\n\nAllows caller to spawn a thread, execute, interrupt, and join.\n\nFixes #1991",
+    "issueId": "1991"
+  },
+  {
+    "commitHash": "0eb8232cfc4926fe5ece8e16edcd2a806ccc413f",
+    "commitMessage": "Call onNodeClosed when closing header tags\n\nEnsures that the end source range for headers is tracked correctly.\n\nFixes #1987",
+    "issueId": "1987"
+  },
+  {
+    "commitHash": "23573ef31ce1320fa2bf57fb6aaf5e51006d69e7",
+    "commitMessage": "Enabled request bodies for DELETEs\n\nFixes #1972",
+    "issueId": "1972"
+  },
+  {
+    "commitHash": "1e69577e358c75a85b769583f0cf860eedb18a5e",
+    "commitMessage": "Don\u0027t recode URL paths\n\nURL paths containing a %2B were incorrectly recoded to a \u0027+\u0027, or a \u0027+\u0027 was recoded to a \u0027 \u0027. Fixed by reverting to the previous behavior of not encoding supplied paths, other than normalizing to ASCII.\n\nFixes #1952",
+    "issueId": "1952"
+  },
+  {
+    "commitHash": "ae4dfd28bb80228bb87f1dd7c6dff40fd21edb14",
+    "commitMessage": "Declaration parse test\n\nCloses #1947",
+    "issueId": "1947"
+  },
+  {
+    "commitHash": "f0ae81b13eb3dee39d4b93e73913e5072bf5debd",
+    "commitMessage": "Check the buffer is fully read if looking for absent content\n\nFixes #1929\n\nIn this case we are testing for a missing `\u003c/textarea\u003e` - but if the buffer hasn\u0027t been fully read, we could never find it.\n\nFor the normal case that this code is looking for - a missing `\u003c/title\u003e` in brief HTML, a best-effort check (assuming the buffer is complete) is sufficient.",
+    "issueId": "1929"
+  },
+  {
+    "commitHash": "c93ea51dabfbfd34d6b979f5cc876ed3b5d093a4",
+    "commitMessage": "Clone Token.Characters into PendingTableCharacters\n\nKeeps the source start/end tracking.\n\nFixes #1927",
+    "issueId": "1927"
+  },
+  {
+    "commitHash": "8e2b86839b276191cf215a3500c405b1489cb215",
+    "commitMessage": "Nested inlineable elements should indent\n\nFixes #1926",
+    "issueId": "1926"
+  },
+  {
+    "commitHash": "6e71f35c9e940ce32439bb8cbdea70579c9fe2b4",
+    "commitMessage": "Refactored URL normalization\n\nIntroduced a simple UrlBuilder that encodes Unicode in paths in addition to existing normalizations (puny code etc)\n\nConsistently normalize input URLs, both user-supplied and internally constructed.\n\nEncode \u0027 \u0027 as \u0027+\u0027 in query strings (vs %20).\n\nFixes #1914",
+    "issueId": "1914"
+  },
+  {
+    "commitHash": "111919256590a37b74d2caa119c4965d1a25124a",
+    "commitMessage": "Wrap \u003cbr\u003e tags correctly when in blocks\n\nFixes #1911",
+    "issueId": "1911"
+  },
+  {
+    "commitHash": "b6f652cef6dca7904d8ea0b971e4fc3812530015",
+    "commitMessage": "Lazy init DefaultOutput, to break class loading circular dependency\n\nFixes #1910\n\nUnfortunately I couldn\u0027t find a way to add a testcase for this without changing every test to run as a fork. Verified manually.",
+    "issueId": "1910"
+  },
+  {
+    "commitHash": "a90bae7928f9b038d1c142773b4a5011335bf8e8",
+    "commitMessage": "Wrap Comment if it\u0027s \u0027effectively first\u0027\n\nAs in, the first node that is not blank space.\n\nAlso refactored impl in Element, which I just fixed for the same issue.\n\nFixes #1906",
+    "issueId": "1906"
+  },
+  {
+    "commitHash": "a96ebc95f9ad681c3a8bb70a4d83020bf8812395",
+    "commitMessage": "Decode components from URL into URI\n\nThis allows both escaped and un-escaped inputs to be correctly decoded then encoded.\n\nFixes #1902",
+    "issueId": "1902"
+  },
+  {
+    "commitHash": "62de0a18c7702ab5b0d1b4add3b8b3bd4f0dc93c",
+    "commitMessage": "Remove incoming sibling prior to add in before() and after()\n\nThis ensures that the siblingIndex is correct before calling the absolute addChildren(index) to re-position.\n\nOtherwise, if the incoming node was already before the context node (in before()), or after (in after()), the relative order would be incorrect due to being removed and re-indexed prior to re-add. For after(), that could lead to an IndexOutOfBounds exception.\n\nFixes #1898.",
+    "issueId": "1898"
+  },
+  {
+    "commitHash": "2f48a617fe48262c0c688188345f73a0fbfe6e59",
+    "commitMessage": "Don\u0027t indent elements when in a \u003cpre\u003e\n\nFixes #1891",
+    "issueId": "1891"
+  },
+  {
+    "commitHash": "db5375eb5b9b153816fb09e884f5700230d19120",
+    "commitMessage": "In text(), insert a space between block and inline elements.\n\nFixes #1877",
+    "issueId": "1877"
+  },
+  {
+    "commitHash": "9bb07d2ab43c0377806b4bb7b88c64366a39a469",
+    "commitMessage": "Replacing a node with itself should be a no-op\n\nFixes #1843",
+    "issueId": "1843"
+  },
+  {
+    "commitHash": "c58112a2eddd630a4f6d76450034c1227ef5f842",
+    "commitMessage": "Set the read size correctly when capped\n\nThe read size of the inputstream should be the desired remaining max (if set), but no larger than the defined buffer size.\n\nFixes #1807\n\nSee #1774, 1671",
+    "issueId": "1807"
+  },
+  {
+    "commitHash": "e714ef12fab4fd00cf7133a22fba4a71ccf7af8e",
+    "commitMessage": "Improved newline and whitespace normalization\n\nFixes #1787\n\nIn TextNode, if this is a blank, check the next Element if it will indent. If so, can skip. Previously would check if the parent el would indent, which is wrong for inline elements.\n\nAlso made empty tags (like \u003cimg\u003e) not indent, but inline.\n\nAnd fixed up how whitespace is normalized at the end of an element, and after the body tag.",
+    "issueId": "1787"
+  },
+  {
+    "commitHash": "f6d9aa050e3d58b6454d4eaef00f1d061f368eb4",
+    "commitMessage": "Don\u0027t skip blanks in preserveWhiteSpace descenders\n\nFixes #1776.\n\nRegressed in f4d00c290325935186f75f1206d16397cc157ced",
+    "issueId": "1776"
+  },
+  {
+    "commitHash": "ccbd65f3bb10922b89f381c3141c11a10c68ee5c",
+    "commitMessage": "In readToByteBuffer, read to max, not the internal buffer size\n\nFixes #1774. Regressed by #1671.",
+    "issueId": "1774"
+  },
+  {
+    "commitHash": "32597ce483a0ae66deb7f837957cbea1e9c710c3",
+    "commitMessage": "Escape components in Element.cssSelector\n\nFixes #1742",
+    "issueId": "1742"
+  },
+  {
+    "commitHash": "d126488db626790a69ce99bb96bf3cfe9c591534",
+    "commitMessage": "consumeSubQuery should not drop leading combinators\n\nRefactored so that it eats until a combinator is seen after non-combinator content, and returns it all.\n\nAnd corrected unit tests that were incorrectly relying on that behavior.\n\nNote that a leading combinator will combine against the root element, which is either the Document, or the context element.\n\nFixes #1707",
+    "issueId": "1707"
+  },
+  {
+    "commitHash": "7f1732a50ae9478496f74307fc0ac22044a504d0",
+    "commitMessage": "Don\u0027t String.format the message unless there are formatting parameters\n\nFixes #1691",
+    "issueId": "1691"
+  },
+  {
+    "commitHash": "f24175e49e4359631cba640f7effaf5327094619",
+    "commitMessage": "When serializing TextNodes, skip emitting blank newlines if the previous element indented\n\nAlso, don\u0027t add newlines in outline mode for data nodes\n\nFixes #1688\nFixes #1689",
+    "issueId": "1689"
+  },
+  {
+    "commitHash": "f24175e49e4359631cba640f7effaf5327094619",
+    "commitMessage": "When serializing TextNodes, skip emitting blank newlines if the previous element indented\n\nAlso, don\u0027t add newlines in outline mode for data nodes\n\nFixes #1688\nFixes #1689",
+    "issueId": "1688"
+  },
+  {
+    "commitHash": "7eb5a745bd44b26777d99e429bd5036597aa6273",
+    "commitMessage": "Normalize attribute names when testing if a boolean attribute\n\nFixes #1656",
+    "issueId": "1656"
+  },
+  {
+    "commitHash": "42da86439df7545a7418044f7e8804b7dfb2de15",
+    "commitMessage": "In bogusComment, make sure unconsume not called after a potential buffer up\n\nWasn\u0027t able to repro with the supplied test case, but could previously happen.\n\nAudited other uses of unconsume and all are immediately after consume, so safe to call (as there\u0027s no path to a bufferup)\n\nFixes #1612",
+    "issueId": "1612"
+  },
+  {
+    "commitHash": "eba3e39a0d4c6e55295b565511873f81a751dde2",
+    "commitMessage": "Fix an IOOB when HTML root cleared and then attributes added\n\nFixes #1611",
+    "issueId": "1611"
+  },
+  {
+    "commitHash": "b4f20f07b81aa35ccf5432ed9be6f6049d9f5139",
+    "commitMessage": "Make sure resetInsertionMode breaks out to Body if nothing left on stack\n\nFixes #1607",
+    "issueId": "1607"
+  },
+  {
+    "commitHash": "26d3c14ec3f0bf81c12e490efd7923e659696cca",
+    "commitMessage": "Fixed an NPE hit on Current Element if there was nothing left on the stack\n\nAnd guarded other calls to Current Element when used in the same manner\n\nFixes #1603",
+    "issueId": "1603"
+  },
+  {
+    "commitHash": "d6a4d20ed67a03a51d801e2f8930ab0ae8be054d",
+    "commitMessage": "In adoption agency, make sure there\u0027s sufficient elements on stack\n\nFixes #1602",
+    "issueId": "1602"
+  },
+  {
+    "commitHash": "dd2536b3f6e14411a67e9ef02a9305895fc224c1",
+    "commitMessage": "Make CurrentElement not null; return root document if nothing on stack\n\nFixes #1601",
+    "issueId": "1601"
+  },
+  {
+    "commitHash": "426e35ec1cd48cd2802e031fc8b4ef4a42de0482",
+    "commitMessage": "Fix the Evaluator for wildcard namespace queries\n\nThe *|el wildcard namespace selector now also matches elements with no namespace.\n\nFixes #1565",
+    "issueId": "1565"
+  },
+  {
+    "commitHash": "2a4c9decd617e7892fe767a535803b68d2268dca",
+    "commitMessage": "Escape ascii control codes in both XML and HTML\n\nRequired for XML and easier to read for HTML\n\nFixes #1556.",
+    "issueId": "1556"
+  },
+  {
+    "commitHash": "f8d4e12814cee17ab8ee1812692e86b7a867b695",
+    "commitMessage": "Updated parser rules for mis-nested tfoot tags\n\nFixes #1543",
+    "issueId": "1543"
+  },
+  {
+    "commitHash": "48d86458bfef17e5ed1118235c422b7a9d4e5c7c",
+    "commitMessage": "Don\u0027t try to unconsume after a potential bufferUp when moving from RCData to TagOpen state\n\nShould fix #1542 - I wasn\u0027t able to directly test this with the sample fuzz output, but was able to reconstruct the same code execution path and error with a standard unit test.\n\nAlso reviewed all 14 other uses of unconsume() and verified that these all are directly after a consume() and there\u0027s no bufferUp() potential, so those cannot trigger this underrun.",
+    "issueId": "1542"
+  },
+  {
+    "commitHash": "14419a6b6bd7be5d6a2b68f90edec48fd8032bf8",
+    "commitMessage": "absUrl attributes should not recurse\n\nFixes #1541",
+    "issueId": "1541"
+  },
+  {
+    "commitHash": "f84549e9fb5618cf58e37dc2f00adb8a279da371",
+    "commitMessage": "Don\u0027t recurse chasing XML declarations\n\nFixes #1539",
+    "issueId": "1539"
+  },
+  {
+    "commitHash": "33da0583c5dff6b20b291f4709addf2afbea8ecb",
+    "commitMessage": "Fix potential NPE in resetInsertionMode()\n\nFixes #1538",
+    "issueId": "1538"
+  },
+  {
+    "commitHash": "c5bab9175c628558eb0abbdb205e0b9903bec9e1",
+    "commitMessage": "Attribute::equals should not be order sensitive\n\nFixes #1492",
+    "issueId": "1492"
+  },
+  {
+    "commitHash": "6a43590f7f59685fdc9838ff32ec5e0f376f9f85",
+    "commitMessage": "Make sure attribute names are syntactically correct when serializing\n\nFor both HTML and XML variants.\nShared impl for jsoup html() and W3CDom conversion.\nAlso removed Attributes.html() inline method as we\u0027re already making an Attribute method call now.\n\nFixes #1474",
+    "issueId": "1474"
+  },
+  {
+    "commitHash": "9edccb17aec39e0c4d1182dac88b91c634fdf456",
+    "commitMessage": "Enable \"restricted\" headers, so that we can set Sec-Fetch-Mode etc\n\nFixes #1461",
+    "issueId": "1461"
+  },
+  {
+    "commitHash": "528d85f3a99bf3a064eb8582af0643e1cc65f206",
+    "commitMessage": "Using the XML parser will default to XML output\n\nAnd make sure \u003c in attributes are escaped when in XML output mode.\n\nFixes #1420",
+    "issueId": "1420"
+  },
+  {
+    "commitHash": "3f75b90de261b6a19121fd07cd477f45fc500bde",
+    "commitMessage": "Test case for shallowClone.toString\n\nCloses #1410",
+    "issueId": "1410"
+  },
+  {
+    "commitHash": "6e3c98c4a578fb7910241e72a5a33014bb8e85f1",
+    "commitMessage": "Fix null guards on start tag attributes\n\nFixes #1404",
+    "issueId": "1404"
+  },
+  {
+    "commitHash": "982c993a1b886a807d7facc47dcb29dbed2961f3",
+    "commitMessage": "Fix Elements.forms()\n\nthe forms() method used to return FormElement-s that are directly in the Elements collection.\nThis behavior was broken since a657ae0240b875a703a1e4909d56ad59997d362d\n\nFixes #1384",
+    "issueId": "1384"
+  },
+  {
+    "commitHash": "f6388656f6c1ce111bc2dd158bf5a3732bda0605",
+    "commitMessage": "Fixed javadoc and added testcase for Element#isBlock\n\nFixes #1342",
+    "issueId": "1342"
+  },
+  {
+    "commitHash": "62c0595813b817ec593b0941ca4c3f29d10fac55",
+    "commitMessage": "Preserve the mark when buffering\n\nSo that we can rewind if required.\n\nFixes #1324",
+    "issueId": "1324"
+  },
+  {
+    "commitHash": "fbc7e76a2ac966a19b12c73147d3c6c8ab0eb61d",
+    "commitMessage": "Auto close optgroup in select\n\nFixes #1313",
+    "issueId": "1313"
+  },
+  {
+    "commitHash": "128008e29c33cf6b3b20fde8f2bbd13ead98509c",
+    "commitMessage": "Fix TextNode.outerHtml normalization for orhpans\n\nFixes #1309",
+    "issueId": "1309"
+  },
+  {
+    "commitHash": "a4210b7a958aa2eaff2b78881f5a1e16f8265dc8",
+    "commitMessage": "Also add fix for ends with spaces\n\nFixes #1279",
+    "issueId": "1279"
+  },
+  {
+    "commitHash": "f5fc1bb04c224865f8eee5ed718f4ffee0e18712",
+    "commitMessage": "Don\u0027t throw an exception if a selector ends in a space, just trim it.\n\nFixes #1274",
+    "issueId": "1274"
+  },
+  {
+    "commitHash": "91ca25b341bc5ad1c364b8e7389287c45ca9df2c",
+    "commitMessage": "Don\u0027t normalize away zwj or zwnj\n\nFixes #1269, combined emojis broken",
+    "issueId": "1269"
+  },
+  {
+    "commitHash": "c2b1fe73129e9c23d93e5393ce8007995c1630dc",
+    "commitMessage": "Report the correct error position in some malformed constructs\n\nMerges #1253\n\nFixes #1251\n\nAuthored bt @csaboka, but I rewrote the test file to fix the diff up.",
+    "issueId": "1251"
+  },
+  {
+    "commitHash": "5359490c56501b231d0d1d19e7eed4ffb37425d7",
+    "commitMessage": "Removed binary input detection attempt\n\nFixes #1250",
+    "issueId": "1250"
+  },
+  {
+    "commitHash": "a9439f0c503ac8e0f009a0ec39f8bff1a6271d51",
+    "commitMessage": "Don\u0027t submit button values\n\nFixes #1231",
+    "issueId": "1231"
+  },
+  {
+    "commitHash": "0fc3d6728ae270fb38f9778ad7fa2663060b50c7",
+    "commitMessage": "On duplicate attributes, retain first not last instance\n\nFixes #1219",
+    "issueId": "1219"
+  },
+  {
+    "commitHash": "a0b87bf10a9a520b49748c619c868caed8d7a109",
+    "commitMessage": "Ensure enough data is buffered to survive a Mark reset\n\nFixes #1218",
+    "issueId": "1218"
+  },
+  {
+    "commitHash": "e02085409f0bdd7e71441fc62448192720305444",
+    "commitMessage": "In W3CDom, handle doctypes, and don\u0027t force XML output\n\nFixes #1183\nUpdates #1098",
+    "issueId": "1183"
+  },
+  {
+    "commitHash": "fb50d9635874185fc050735057b8a7363cd53f3f",
+    "commitMessage": "Deepclone attributes in LeafNodes if set\n\nFixes #1176",
+    "issueId": "1176"
+  },
+  {
+    "commitHash": "7ff7c43e9fbf4bbaf2b4517b3d4f8a429d87d3bb",
+    "commitMessage": "Use normalized element names for tree searching\n\nFixes #1149",
+    "issueId": "1149"
+  },
+  {
+    "commitHash": "62674f903bd2fc352601fa39a3d9dea348e59f4b",
+    "commitMessage": "Fix parse of :nth-child(-n+2)\n\nThe `-` sign of the nth-child step was ignored if there was no digit for the step.\n\nAlso cleaned up the function a bit.\n\nFixes #1147",
+    "issueId": "1147"
+  },
+  {
+    "commitHash": "1d663eeb1c0d1c08bcfe5d30f05170768bb0438e",
+    "commitMessage": "Don\u0027t NPE in setValue for an orphan Attribute\n\nFixes #1107",
+    "issueId": "1107"
+  },
+  {
+    "commitHash": "fe92494c7716eeb04d5d4040cc43d67b8f2f4aaf",
+    "commitMessage": "W3CDom#asString should emit XML\n\nFixes #1098",
+    "issueId": "1098"
+  },
+  {
+    "commitHash": "165b3c8225eaed0dd3bff1284375b1ff4340c9ad",
+    "commitMessage": "In W3CDom, treat illegal tag names as text Nodes\n\nFixes #1093",
+    "issueId": "1093"
+  },
+  {
+    "commitHash": "7cf9d03bf311494df652a05c2528eb06b2373f9d",
+    "commitMessage": "In Element#cssSelector, check that IDs are unique before using them\n\nFixes #1085",
+    "issueId": "1085"
+  },
+  {
+    "commitHash": "8b837a43cbe2c12624ab2088dc4ff9a725af5f4d",
+    "commitMessage": "Return null attribute values as empty string\n\nPrevious / defined behaviour.\n\nFixes #1065",
+    "issueId": "1065"
+  },
+  {
+    "commitHash": "1028b37a1dfbc5dda7b18cbe692ab168c54fb505",
+    "commitMessage": "Leaf nodes should return an empty list on .childNodes(), not except\n\nFixes #1032",
+    "issueId": "1032"
+  },
+  {
+    "commitHash": "e6b11b0bdd86e333fa0054c83760394f8fb76b1c",
+    "commitMessage": "Make sure tags and related start with an ascii alpha, per spec\n\nFixes #1006",
+    "issueId": "1006"
+  },
+  {
+    "commitHash": "0f7e0cc373aced32629f5321c9521f81d8248647",
+    "commitMessage": "Make sure to consume a UTF-8 BOM at the start of a doc\n\nFixes #1003",
+    "issueId": "1003"
+  },
+  {
+    "commitHash": "df272b77c2cf89e9cbe2512bbddf8a3bc28a704b",
+    "commitMessage": "In XML parse mode set to lowercase, normalize closing tags\n\nFixes #998",
+    "issueId": "998"
+  },
+  {
+    "commitHash": "b92b4f6b9b3256e97bfb6a0732bf113b6da53a4c",
+    "commitMessage": "isEmpty() should bufferUp\n\nisEmpty wasn\u0027t checking to see if more content was able to be read, so when called directly without a consume() could give misleading results.\n\nFixes #995",
+    "issueId": "995"
+  },
+  {
+    "commitHash": "45c54996c4e8d74cf84304e767934ff584c24702",
+    "commitMessage": "Make sure the mark limit is same as buffer size to prevent mark being invalidated\n\nWas bumping into two different buffer sizes when on Android \u003c\u003d 6, where the created buffer was larger than the underling OKio buffer that Android was using.\n\nFixes #990",
+    "issueId": "990"
+  },
+  {
+    "commitHash": "2c4e79b104c0ff32566ce247617d47c0b39cc2c7",
+    "commitMessage": "DataUtil should throw IOException on failed reads during parse\n\nFixes #980",
+    "issueId": "980"
+  },
+  {
+    "commitHash": "3475dc846d78e56422b3e6fdf36dfd4416f359f5",
+    "commitMessage": "Maintain stack for namespaces\n\nFixes #977",
+    "issueId": "977"
+  },
+  {
+    "commitHash": "b8411990753314ed3b746d3402dec5a65ff6d603",
+    "commitMessage": "Don\u0027t OBE at  EOF\n\nFixes #972",
+    "issueId": "972"
+  },
+  {
+    "commitHash": "e38af6a351cef738885cb61fed828d9c9f6ec5a1",
+    "commitMessage": "Threadlocal encoder\n\nFixes #970",
+    "issueId": "970"
+  },
+  {
+    "commitHash": "c19acbb96c1c02deb310488677201683f6309708",
+    "commitMessage": "Support infinite timeouts\n\nFixes #968",
+    "issueId": "968"
+  },
+  {
+    "commitHash": "1ece207d4d14336c405e9e3c2edee3f1cf88d14d",
+    "commitMessage": "Handle empty buffer in attribute value read\n\nFixes #967",
+    "issueId": "967"
+  },
+  {
+    "commitHash": "adb7a15a1e2dd6742a25592602a6e8ee77b518b6",
+    "commitMessage": "Start stack search at right spot\n\nFixes a bug in the in-scope search, which was starting in the middle instead of the bottom when trying to limit the stack depth search. That meant that when generating implied end-tags, the stack wasn\u0027t getting shorter, so it tried to generate end tags for days, and ultimately threw a StackOverflowDetect.\n\n(Which is somewhat ironic, because the max depth was set to prevent a different STE... Le Sigh.)\n\nFixes #966",
+    "issueId": "966"
+  },
+  {
+    "commitHash": "c324fabe86c0a59eb635610dc85d8d7a7be25c74",
+    "commitMessage": "Notifications to cloned elements were incorrectly delivered to the original element.\n\nFixes #951",
+    "issueId": "951"
+  },
+  {
+    "commitHash": "195566fa6d4092c6983fbf497c37ae53a188fa90",
+    "commitMessage": "Allow rctext / rcdata tags to self -close\n\nFixes #906",
+    "issueId": "906"
+  },
+  {
+    "commitHash": "35bceca331e07938a9c4cd62d68e08740cd39575",
+    "commitMessage": "Cleaned up self-closing ack and error track\n\nFixes #868",
+    "issueId": "868"
+  },
+  {
+    "commitHash": "a810d2e3615da9a37ad74a7db2ca8bc6945ab9a8",
+    "commitMessage": "Don\u0027t blow up if a namespace is undefined\n\nFixes #848",
+    "issueId": "848"
+  },
+  {
+    "commitHash": "b934c5d3e30917de86796c89fcb7cd000f642a80",
+    "commitMessage": "Make sure unkown tags close correctly when in insensitive case mode\n\nFixes #819",
+    "issueId": "819"
+  },
+  {
+    "commitHash": "83f01fd864e59fa69c894da06f4a15489222d401",
+    "commitMessage": "Access the class attribute case-insensitiviely\n\nFixes #814",
+    "issueId": "814"
+  },
+  {
+    "commitHash": "fce241b57f1e0292b143a11d31b8abf9ad949398",
+    "commitMessage": "Skip empty attribute values when serializing XML processing instructions\n\nFixes #770",
+    "issueId": "770"
+  },
+  {
+    "commitHash": "850a9cc02fb72cc450d1a9dc41912fa80fee9020",
+    "commitMessage": "Maintain the Parser used when parsing a Document\n\nAllows appropriate fragment parsing as XML or HTML, and remembers case sensitivity choice.\n\nFixes #769",
+    "issueId": "769"
+  },
+  {
+    "commitHash": "84ffc4b73ca48ebe2423eac7a5f7b0aaa6c93aad",
+    "commitMessage": "Don\u0027t override request content-type if set\n\nFixes #756",
+    "issueId": "756"
+  },
+  {
+    "commitHash": "f0f0e41e6c581de43dfaa98f5c2af52e43e42e62",
+    "commitMessage": "Merge ahielg:master for attribute fix\n\nFixes #746",
+    "issueId": "746"
+  },
+  {
+    "commitHash": "3b2440a257df45fc49884a5c67bb0c9ce631781d",
+    "commitMessage": "Don\u0027t reuse encoders, to make threadsafe\n\nFixes #740 (well, I hope. I wasn\u0027t able to replicate it.)",
+    "issueId": "740"
+  },
+  {
+    "commitHash": "49db84f8f2beb846fb8271fa20a28271afe37d90",
+    "commitMessage": "Fix getting stuck on non-ascii tags\n\nFixed #704",
+    "issueId": "704"
+  },
+  {
+    "commitHash": "c3cbe1b64e7f66ff9f9b53f1388eb135e6693187",
+    "commitMessage": "Support UTF-16 and -32 BOMs\n\nFixes #695",
+    "issueId": "695"
+  },
+  {
+    "commitHash": "b2e37fca64877104cfdad3f56cdc2c8b98cb6be1",
+    "commitMessage": "Fixed an issue when moving moving nodes using Element.insert(index, children)\n\nFixes #689",
+    "issueId": "689"
+  },
+  {
+    "commitHash": "cc19d3029ab0db137da0e95cc55c20b131241cf1",
+    "commitMessage": "Reverted Node.equals() and Node.hashCode()\n\nBack to identity (object) comparisons, as deep content inspection had\nnegative performance impacts and hashkey stability problems.\nFunctionality replaced with Node.hasSameContent().\n\nFixes #688",
+    "issueId": "688"
+  },
+  {
+    "commitHash": "25e0e1e9ffca9a350d060db7d2179c5c9e459055",
+    "commitMessage": "Added support for unicode letters in tags\n\nFixes #667",
+    "issueId": "667"
+  },
+  {
+    "commitHash": "c090381c55b6d275eebe60053d36f198ffe793ca",
+    "commitMessage": "Test for prolog\n\nFixes #652",
+    "issueId": "652"
+  },
+  {
+    "commitHash": "a229d7354da5210a728ce5d43158d5cd780772db",
+    "commitMessage": "Allow selectors to contain unbalanced braces\n\nFixes #611",
+    "issueId": "611"
+  },
+  {
+    "commitHash": "4d94c5d0f0e60e50d555178ff0ca5b8d4da5f054",
+    "commitMessage": "Modified Node.clone() to use iterative approach.\n\nUses BFS to clone nodes. Fixes #290.",
+    "issueId": "290"
+  },
+  {
+    "commitHash": "7ff15ee20c961e370837d8f96ae77886ecd910d8",
+    "commitMessage": "Corrected the javadoc for Element#child() to note that it throws IndexOutOfBounds.\n\nFixes #277",
+    "issueId": "277"
+  },
+  {
+    "commitHash": "a74e16f335a8854f8c2ba421e06daacf7e0b211b",
+    "commitMessage": "Fixed normalisation of carriage returns to newlines on input HTML\n\nFixes #110",
+    "issueId": "110"
+  },
+  {
+    "commitHash": "06f6a4546d702fe32b633fa731954717e6292247",
+    "commitMessage": "Fixed an issue with a missing quote when serialising DocumentType nodes.\n\nFixes #109",
+    "issueId": "109"
+  },
+  {
+    "commitHash": "0c9ccf770b8cd61d67480a010348aeab5016a942",
+    "commitMessage": "Fixed issue where a single 0 character was lexed incorrectly as a null character.\n\nFixes #107",
+    "issueId": "107"
+  },
+  {
+    "commitHash": "97ecc73c2eca5fa378620d144d258647ca2a8992",
+    "commitMessage": "Fixed an issue when parsing \u003cscript\u003e tags.\n\nWhen in body where the tokeniser wouldn\u0027t switch to the InScript state, which meant that data in a \u003cscript\u003e wouldn\u0027t parse correctly.\n\nFixes #104",
+    "issueId": "104"
+  },
+  {
+    "commitHash": "69605b20f1f89535e3cd514991c020f0b0eda53b",
+    "commitMessage": "Javadoc update for DescendableLinkedList\n\nFixes #103",
+    "issueId": "103"
+  },
+  {
+    "commitHash": "b204f6aa3000dc768caf487a6c783f5bde8de311",
+    "commitMessage": "Fixed cookie handling issue in jsoup.Connect where empty cookies would cause a validation exception.\n\nFixes #87",
+    "issueId": "87"
+  }
+]
