@@ -24,6 +24,9 @@ public class BugHarvesterTest {
     private GHRepository repository;
 
     @Mock
+    private GHIssueSearchBuilder searchBuilder;
+
+    @Mock
     private GHIssue issue;
 
     @Mock
@@ -36,26 +39,34 @@ public class BugHarvesterTest {
     private GHCommit.ShortInfo shortInfo;
 
     @Mock
-    private GHLabel label;
+    private PagedSearchIterable<GHIssue> pagedSearchIterable;
 
     @Mock
-    private PagedIterable<GHIssueEvent> pagedIterable;
+    private PagedIterator<GHIssue> pagedIterator;
 
     @Mock
-    private PagedIterator<GHIssueEvent> pagedIterator;
+    private PagedIterable<GHIssueEvent> pagedEvents;
+
+    @Mock
+    private PagedIterator<GHIssueEvent> pagedEventsIterator;
 
     @Test
     public void testHarvestBugFixingCommits() throws IOException {
         String repoUrl = "https://github.com/user/repo";
 
         when(github.getRepository("user/repo")).thenReturn(repository);
-        when(repository.getIssues(GHIssueState.CLOSED)).thenReturn(Collections.singletonList(issue));
-        when(issue.getLabels()).thenReturn(Collections.singletonList(label));
-        when(label.getName()).thenReturn("bug");
-        when(issue.listEvents()).thenReturn(pagedIterable);
-        when(pagedIterable.iterator()).thenReturn(pagedIterator);
+        when(github.searchIssues()).thenReturn(searchBuilder);
+        when(searchBuilder.q("repo:user/repo is:issue is:closed label:bug")).thenReturn(searchBuilder);
+        when(searchBuilder.list()).thenReturn(pagedSearchIterable);
+        when(pagedSearchIterable.iterator()).thenReturn(pagedIterator);
         when(pagedIterator.hasNext()).thenReturn(true, false);
-        when(pagedIterator.next()).thenReturn(event);
+        when(pagedIterator.next()).thenReturn(issue);
+
+        when(issue.listEvents()).thenReturn(pagedEvents);
+        when(pagedEvents.iterator()).thenReturn(pagedEventsIterator);
+        when(pagedEventsIterator.hasNext()).thenReturn(true, false);
+        when(pagedEventsIterator.next()).thenReturn(event);
+
         when(event.getEvent()).thenReturn("closed");
         when(event.getCommitId()).thenReturn("commit_id");
         when(repository.getCommit("commit_id")).thenReturn(commit);
