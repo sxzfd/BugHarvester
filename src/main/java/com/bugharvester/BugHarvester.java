@@ -4,8 +4,11 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.kohsuke.github.*;
 
+import com.google.gson.reflect.TypeToken;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +20,7 @@ public class BugHarvester {
             System.err.println("Commands:");
             System.err.println("  harvest <repository_url> [oauth_token]");
             System.err.println("  analyze <repository_url> <commit_hash>");
+            System.err.println("  verify <repository_url> <bfc_json_file>");
             return;
         }
 
@@ -49,6 +53,27 @@ public class BugHarvester {
                 ProjectAnalyzer analyzer = new ProjectAnalyzer(analyzeRepoUrl);
                 analyzer.checkout(commitHash);
                 analyzer.buildAndTest();
+                break;
+            case "verify":
+                if (args.length < 3) {
+                    System.err.println("Usage: java -jar BugHarvester.jar verify <repository_url> <bfc_json_file>");
+                    return;
+                }
+                String verifyRepoUrl = args[1];
+                String bfcJsonFile = args[2];
+
+                Gson gson = new Gson();
+                try (FileReader reader = new FileReader(bfcJsonFile)) {
+                    Type bfcListType = new TypeToken<ArrayList<BugFixingCommit>>(){}.getType();
+                    List<BugFixingCommit> bfcsToVerify = gson.fromJson(reader, bfcListType);
+
+                    for (BugFixingCommit bfc : bfcsToVerify) {
+                        System.out.println("Verifying BFC: " + bfc.commitHash);
+                        BFCVerifier verifier = new BFCVerifier(verifyRepoUrl, bfc);
+                        boolean verified = verifier.verify();
+                        System.out.println("BFC " + bfc.commitHash + " verified: " + verified);
+                    }
+                }
                 break;
             default:
                 System.err.println("Unknown command: " + command);

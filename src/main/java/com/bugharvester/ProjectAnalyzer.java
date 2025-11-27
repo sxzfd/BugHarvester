@@ -2,8 +2,19 @@ package com.bugharvester;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.IOException;
+import java.util.List;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.diff.DiffEntry;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.ObjectReader;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevTree;
+import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.treewalk.CanonicalTreeParser;
+import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.treewalk.filter.PathFilter;
 
 public class ProjectAnalyzer {
 
@@ -70,5 +81,51 @@ public class ProjectAnalyzer {
         Process process = processBuilder.start();
         int exitCode = process.waitFor();
         return exitCode == 0;
+    }
+
+    public RevCommit getParent(String commitHash) throws IOException {
+        try (RevWalk revWalk = new RevWalk(git.getRepository())) {
+            RevCommit commit = revWalk.parseCommit(ObjectId.fromString(commitHash));
+            if (commit.getParentCount() > 0) {
+                return revWalk.parseCommit(commit.getParent(0).getId());
+            }
+            return null;
+        }
+    }
+
+    public List<DiffEntry> getDiff(String oldCommitHash, String newCommitHash) throws GitAPIException, IOException {
+        ObjectId oldId = git.getRepository().resolve(oldCommitHash + "^{tree}");
+        ObjectId newId = git.getRepository().resolve(newCommitHash + "^{tree}");
+
+        try (ObjectReader reader = git.getRepository().newObjectReader()) {
+            CanonicalTreeParser oldTreeIter = new CanonicalTreeParser();
+            oldTreeIter.reset(reader, oldId);
+            CanonicalTreeParser newTreeIter = new CanonicalTreeParser();
+            newTreeIter.reset(reader, newId);
+
+            return git.diff()
+                    .setNewTree(newTreeIter)
+                    .setOldTree(oldTreeIter)
+                    .call();
+        }
+    }
+
+    public String getFileContentAtCommit(String commitHash, String filePath) throws IOException {
+        ObjectId commitId = ObjectId.fromString(commitHash);
+        try (RevWalk revWalk = new RevWalk(git.getRepository())) {
+            RevCommit commit = revWalk.parseCommit(commitId);
+            RevTree tree = commit.getTree();
+            try (TreeWalk treeWalk = new TreeWalk(git.getRepository())) {
+                treeWalk.addTree(tree);
+                treeWalk.setRecursive(true);
+                treeWalk.setFilter(PathFilter.create(filePath));
+                if (!treeWalk.next()) {
+                    return null;
+                }
+                ObjectId objectId = treeWalk.getObjectId(0);
+                byte[] bytes = git.getRepository().open(objectId).getBytes();
+                return new String(bytes);
+            }
+        }
     }
 }
