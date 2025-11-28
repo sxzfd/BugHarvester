@@ -2,107 +2,134 @@ package com.bugharvester;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.diff.DiffEntry;
-import org.eclipse.jgit.diff.DiffFormatter;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
-import org.eclipse.jgit.treewalk.CanonicalTreeParser;
-import org.eclipse.jgit.util.io.DisabledOutputStream;
+import org.kohsuke.github.*;
 
-import java.io.File;
+import com.google.gson.reflect.TypeToken;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class BugHarvester {
 
-    private static final int MAX_FILES_CHANGED = 5;
-    private static final Pattern ISSUE_ID_PATTERN = Pattern.compile("#(\\d+)");
-
-    public static void main(String[] args) {
-        if (args.length != 1) {
-            System.err.println("Usage: java -jar BugHarvester.jar <repository_url>");
+    public static void main(String[] args) throws Exception {
+        if (args.length < 1) {
+            System.err.println("Usage: java -jar BugHarvester.jar <command> [options]");
+            System.err.println("Commands:");
+            System.err.println("  harvest <repository_url> [oauth_token]");
+            System.err.println("  analyze <repository_url> <commit_hash>");
+            System.err.println("  verify <repository_url> <bfc_json_file>");
             return;
         }
 
-        String repoUrl = args[0];
-        String repoName = repoUrl.substring(repoUrl.lastIndexOf('/') + 1);
-        File repoDir = new File(repoName);
+        String command = args[0];
+        switch (command) {
+            case "harvest":
+                if (args.length < 2) {
+                    System.err.println("Usage: java -jar BugHarvester.jar harvest <repository_url> [oauth_token]");
+                    return;
+                }
+                String repoUrl = args[1];
+                String oauthToken = args.length > 2 ? args[2] : null;
+                String repoName = repoUrl.substring(repoUrl.lastIndexOf('/') + 1);
 
-        try {
-            Git git = cloneRepository(repoUrl, repoDir);
-            List<BugFixingCommit> bfcs = harvestBugFixingCommits(git.getRepository());
-            writeBFCsToJson(bfcs, repoName + "_bfcs.json");
-            System.out.println("Successfully harvested " + bfcs.size() + " bug-fixing commits.");
-        } catch (GitAPIException | IOException e) {
-            e.printStackTrace();
+                try {
+                    List<BugFixingCommit> bfcs = harvestBugFixingCommits(repoUrl, oauthToken);
+                    writeBFCsToJson(bfcs, repoName + "_bfcs.json");
+                    System.out.println("Successfully harvested " + bfcs.size() + " bug-fixing commits.");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                break;
+            case "analyze":
+                if (args.length < 3) {
+                    System.err.println("Usage: java -jar BugHarvester.jar analyze <repository_url> <commit_hash>");
+                    return;
+                }
+                String analyzeRepoUrl = args[1];
+                String commitHash = args[2];
+                ProjectAnalyzer analyzer = new ProjectAnalyzer(analyzeRepoUrl);
+                analyzer.checkout(commitHash);
+                analyzer.buildAndTest();
+                break;
+            case "verify":
+                if (args.length < 3) {
+                    System.err.println("Usage: java -jar BugHarvester.jar verify <repository_url> <bfc_json_file>");
+                    return;
+                }
+                String verifyRepoUrl = args[1];
+                String bfcJsonFile = args[2];
+
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                List<VerifiedBugFixingCommit> verifiedBFCs = new ArrayList<>();
+                try (FileReader reader = new FileReader(bfcJsonFile)) {
+                    Type bfcListType = new TypeToken<ArrayList<BugFixingCommit>>(){}.getType();
+                    List<BugFixingCommit> bfcsToVerify = gson.fromJson(reader, bfcListType);
+
+                    for (BugFixingCommit bfc : bfcsToVerify) {
+                        System.out.println("Verifying BFC: " + bfc.commitHash);
+                        BFCVerifier verifier = new BFCVerifier(verifyRepoUrl, bfc);
+                        boolean isVerified = verifier.verify();
+                        verifiedBFCs.add(new VerifiedBugFixingCommit(bfc, isVerified));
+                        System.out.println("BFC " + bfc.commitHash + " verified: " + isVerified);
+                    }
+                }
+
+                String outputFileName = bfcJsonFile.replace(".json", "_verified.json");
+                try (FileWriter writer = new FileWriter(outputFileName)) {
+                    gson.toJson(verifiedBFCs, writer);
+                }
+                System.out.println("Verification results written to " + outputFileName);
+                break;
+            default:
+                System.err.println("Unknown command: " + command);
         }
     }
 
-    private static Git cloneRepository(String repoUrl, File repoDir) throws GitAPIException {
-        if (repoDir.exists()) {
-            System.out.println("Repository already exists. Opening existing repository.");
-            try {
-                return Git.open(repoDir);
-            } catch (IOException e) {
-                throw new GitAPIException("Error opening existing repository", e) {
-                };
-            }
+    public static List<BugFixingCommit> harvestBugFixingCommits(String repoUrl, String oauthToken) throws IOException {
+        GitHub github;
+        if (oauthToken != null && !oauthToken.isEmpty()) {
+            github = new GitHubBuilder().withOAuthToken(oauthToken).build();
         } else {
-            System.out.println("Cloning repository from " + repoUrl);
-            return Git.cloneRepository()
-                    .setURI(repoUrl)
-                    .setDirectory(repoDir)
-                    .call();
+            github = GitHub.connectAnonymously();
         }
+        return harvestBugFixingCommits(github, repoUrl);
     }
 
-    private static List<BugFixingCommit> harvestBugFixingCommits(Repository repository) throws GitAPIException, IOException {
+    static List<BugFixingCommit> harvestBugFixingCommits(GitHub github, String repoUrl) throws IOException {
+        System.out.println("Starting to harvest bug-fixing commits from " + repoUrl);
         List<BugFixingCommit> bfcs = new ArrayList<>();
-        Git git = new Git(repository);
-        Iterable<RevCommit> commits = git.log().all().call();
+        String repoName = repoUrl.replace("https://github.com/", "").replaceAll("\\.git$", "");
+        GHRepository repository = github.getRepository(repoName);
+        System.out.println("Connected to repository: " + repository.getFullName());
 
-        for (RevCommit commit : commits) {
-            if (isBugFixingCommit(commit, repository)) {
-                String issueId = extractIssueId(commit.getFullMessage());
-                bfcs.add(new BugFixingCommit(commit.getName(), commit.getFullMessage(), issueId));
+        String searchQuery = String.format("repo:%s is:issue is:closed label:bug", repoName);
+        System.out.println("Executing search query: " + searchQuery);
+        PagedSearchIterable<GHIssue> bugIssues = github.searchIssues().q(searchQuery).list();
+        System.out.println("Found " + bugIssues.getTotalCount() + " bug issues.");
+
+        System.out.println("Processing bug issues...");
+        int issueCount = 0;
+        for (GHIssue issue : bugIssues) {
+            issueCount++;
+            System.out.println("Processing issue " + issueCount + ": #" + issue.getNumber());
+            for (GHIssueEvent event : issue.listEvents()) {
+                if ("closed".equals(event.getEvent()) && event.getCommitId() != null) {
+                    try {
+                        GHCommit commit = repository.getCommit(event.getCommitId());
+                        bfcs.add(new BugFixingCommit(commit.getSHA1(), commit.getCommitShortInfo().getMessage(), String.valueOf(issue.getNumber())));
+                    } catch (IOException e) {
+                        System.err.println("Could not retrieve commit " + event.getCommitId() + " for issue #" + issue.getNumber() + ". Skipping.");
+                    }
+                    break;
+                }
             }
         }
 
+        System.out.println("Finished processing all issues.");
         return bfcs;
-    }
-
-    private static boolean isBugFixingCommit(RevCommit commit, Repository repository) throws IOException {
-        String message = commit.getFullMessage().toLowerCase();
-        if (!(message.contains("fix") || message.contains("bug") || message.contains("issue"))) {
-            return false;
-        }
-
-        if (commit.getParentCount() == 0) {
-            return false;
-        }
-
-        RevCommit parent = commit.getParent(0);
-        DiffFormatter diffFormatter = new DiffFormatter(DisabledOutputStream.INSTANCE);
-        diffFormatter.setRepository(repository);
-        diffFormatter.setContext(0);
-        List<DiffEntry> diffs = diffFormatter.scan(parent.getTree(), commit.getTree());
-
-        return diffs.size() <= MAX_FILES_CHANGED;
-    }
-
-    private static String extractIssueId(String message) {
-        Matcher matcher = ISSUE_ID_PATTERN.matcher(message);
-        if (matcher.find()) {
-            return matcher.group(1);
-        }
-        return null;
     }
 
     private static void writeBFCsToJson(List<BugFixingCommit> bfcs, String fileName) throws IOException {
@@ -112,15 +139,24 @@ public class BugHarvester {
         }
     }
 
-    private static class BugFixingCommit {
-        private final String commitHash;
-        private final String commitMessage;
-        private final String issueId;
+    static class BugFixingCommit {
+        final String commitHash;
+        final String commitMessage;
+        final String issueId;
 
         public BugFixingCommit(String commitHash, String commitMessage, String issueId) {
             this.commitHash = commitHash;
             this.commitMessage = commitMessage;
             this.issueId = issueId;
+        }
+    }
+
+    static class VerifiedBugFixingCommit extends BugFixingCommit {
+        boolean verified;
+
+        public VerifiedBugFixingCommit(BugFixingCommit bfc, boolean verified) {
+            super(bfc.commitHash, bfc.commitMessage, bfc.issueId);
+            this.verified = verified;
         }
     }
 }
