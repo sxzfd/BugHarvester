@@ -62,7 +62,8 @@ public class BugHarvester {
                 String verifyRepoUrl = args[1];
                 String bfcJsonFile = args[2];
 
-                Gson gson = new Gson();
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                List<VerifiedBugFixingCommit> verifiedBFCs = new ArrayList<>();
                 try (FileReader reader = new FileReader(bfcJsonFile)) {
                     Type bfcListType = new TypeToken<ArrayList<BugFixingCommit>>(){}.getType();
                     List<BugFixingCommit> bfcsToVerify = gson.fromJson(reader, bfcListType);
@@ -70,10 +71,17 @@ public class BugHarvester {
                     for (BugFixingCommit bfc : bfcsToVerify) {
                         System.out.println("Verifying BFC: " + bfc.commitHash);
                         BFCVerifier verifier = new BFCVerifier(verifyRepoUrl, bfc);
-                        boolean verified = verifier.verify();
-                        System.out.println("BFC " + bfc.commitHash + " verified: " + verified);
+                        boolean isVerified = verifier.verify();
+                        verifiedBFCs.add(new VerifiedBugFixingCommit(bfc, isVerified));
+                        System.out.println("BFC " + bfc.commitHash + " verified: " + isVerified);
                     }
                 }
+
+                String outputFileName = bfcJsonFile.replace(".json", "_verified.json");
+                try (FileWriter writer = new FileWriter(outputFileName)) {
+                    gson.toJson(verifiedBFCs, writer);
+                }
+                System.out.println("Verification results written to " + outputFileName);
                 break;
             default:
                 System.err.println("Unknown command: " + command);
@@ -140,6 +148,15 @@ public class BugHarvester {
             this.commitHash = commitHash;
             this.commitMessage = commitMessage;
             this.issueId = issueId;
+        }
+    }
+
+    static class VerifiedBugFixingCommit extends BugFixingCommit {
+        boolean verified;
+
+        public VerifiedBugFixingCommit(BugFixingCommit bfc, boolean verified) {
+            super(bfc.commitHash, bfc.commitMessage, bfc.issueId);
+            this.verified = verified;
         }
     }
 }

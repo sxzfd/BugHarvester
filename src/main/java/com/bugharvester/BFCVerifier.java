@@ -56,8 +56,6 @@ public class BFCVerifier {
 
         boolean parentTestsPassWithMigratedTests = analyzer.buildAndTest();
 
-        analyzer.checkout(parentCommit.getName());
-
         analyzer.checkout(bfc.commitHash);
         boolean bfcTestsPass = analyzer.buildAndTest();
 
