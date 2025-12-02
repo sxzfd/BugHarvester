@@ -6,6 +6,7 @@ import org.kohsuke.github.*;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -90,6 +91,15 @@ public class BugHarvester {
             this.commitHash = commitHash;
             this.commitMessage = commitMessage;
             this.issueId = issueId;
+        }
+    }
+
+    static class VerifiedBugFixingCommit extends BugFixingCommit {
+        boolean verified;
+
+        public VerifiedBugFixingCommit(BugFixingCommit bfc, boolean verified) {
+            super(bfc.commitHash, bfc.commitMessage, bfc.issueId);
+            this.verified = verified;
         }
     }
 }
